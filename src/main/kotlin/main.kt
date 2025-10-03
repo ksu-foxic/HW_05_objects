@@ -1,3 +1,5 @@
+import com.sun.jdi.Type
+
 data class Post(
     val id: Int,//Идентификатор записи
     val ownerId: Int = 122,//Идентификатор владельца стены, на которой размещена запись
@@ -9,7 +11,8 @@ data class Post(
     val canDelete: Boolean = false,//Информация о том, может ли текущий пользователь удалить запись
     val canEdit: Boolean = false,//Информация о том, может ли текущий пользователь редактировать запись
     val isPinned: Boolean = true,//Информация о том, что запись закреплена
-    val likes: Likes//Информация о лайках
+    val likes: Likes,//Информация о лайках
+    val attachments: Array<Attachment> = emptyArray()
 )
 
 data class Likes(
@@ -18,6 +21,36 @@ data class Likes(
     val canLike: Boolean = true,// информация о том, может ли текущий пользователь поставить отметку «Мне нравится»
     val canPublish: Boolean = false//информация о том, может ли текущий пользователь сделать репост записи
 )
+
+interface Attachment {
+    val type: String
+}
+
+data class Photo(val id: Int, val ownerId: Int, val photo130: String, val photo604: String)
+data class PhotoAttachment(val photo: Photo) : Attachment {
+    override val type: String = "photo"
+}
+
+data class Video(val id: Int, val ownerId: Int, val title: String, val duration: Int)
+data class VideoAttachment(val video: Video) : Attachment {
+    override val type: String = "video"
+}
+
+data class Audio(val id: Int, val ownerId: Int, val artist: String, val title: String)
+data class AudioAttachment(val audio: Audio) : Attachment {
+    override val type: String = "audio"
+}
+
+data class Doc(val id: Int, val ownerId: Int, val title: String)
+data class DocAttachment(val doc: Doc) : Attachment {
+    override val type: String = "doc"
+}
+
+data class Sticker(val productId: Int, val stickerId: Int, val animationUrl: String)
+data class StickerAttachment(val sticker: Sticker) : Attachment {
+    override val type: String = "sticker"
+}
+
 
 object WallService {
     private var posts = emptyArray<Post>()
@@ -57,4 +90,11 @@ fun main() {
     val updatePost1 = addPost1.copy(string = "Обновленный первый пост")
     val result = WallService.update(updatePost1)
     println("Обновление прошло успешно - $result, новый текст поста ${addPost1.id}: ${updatePost1.string} и количеством лайков ${updatePost1.likes.count}")
+
+    println(PhotoAttachment(Photo(1, 1, "https1_1", "https1_2")))
+    println(AudioAttachment(Audio(2, 2, "Nirvana", "Rape me")))
+    println(VideoAttachment(Video(3, 3, "movie", 30)))
+    println(DocAttachment(Doc(4, 4, "Document")))
+    println(StickerAttachment(Sticker(5, 5, "URL")))
+
 }
