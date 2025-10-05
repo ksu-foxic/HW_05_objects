@@ -22,35 +22,30 @@ data class Likes(
     val canPublish: Boolean = false//информация о том, может ли текущий пользователь сделать репост записи
 )
 
-interface Attachment {
-    val type: String
-}
+sealed class Attachment {
+    abstract val type: String
 
-data class Photo(val id: Int, val ownerId: Int, val photo130: String, val photo604: String)
-data class PhotoAttachment(val photo: Photo) : Attachment {
-    override val type: String = "photo"
-}
+    data class Photo(val id: Int, val ownerId: Int, val photo130: String, val photo604: String) : Attachment() {
+        override val type: String = "photo"
+    }
 
-data class Video(val id: Int, val ownerId: Int, val title: String, val duration: Int)
-data class VideoAttachment(val video: Video) : Attachment {
-    override val type: String = "video"
-}
+    data class Video(val id: Int, val ownerId: Int, val title: String, val duration: Int) : Attachment() {
+        override val type: String = "video"
+    }
 
-data class Audio(val id: Int, val ownerId: Int, val artist: String, val title: String)
-data class AudioAttachment(val audio: Audio) : Attachment {
-    override val type: String = "audio"
-}
+    data class Audio(val id: Int, val ownerId: Int, val artist: String, val title: String) : Attachment() {
+        override val type: String = "audio"
+    }
 
-data class Doc(val id: Int, val ownerId: Int, val title: String)
-data class DocAttachment(val doc: Doc) : Attachment {
-    override val type: String = "doc"
-}
+    data class Doc(val id: Int, val ownerId: Int, val title: String) : Attachment() {
+        override val type: String = "doc"
+    }
 
-data class Sticker(val productId: Int, val stickerId: Int, val animationUrl: String)
-data class StickerAttachment(val sticker: Sticker) : Attachment {
-    override val type: String = "sticker"
-}
+    data class Sticker(val productId: Int, val stickerId: Int, val animationUrl: String) : Attachment() {
+        override val type: String = "sticker"
+    }
 
+}
 
 object WallService {
     private var posts = emptyArray<Post>()
@@ -69,6 +64,16 @@ object WallService {
             }
         }
         return false
+    }
+
+    fun addAttachment(postId: Int, attachment: Attachment): Boolean {
+        val postIndex = posts.indexOfFirst { it.id == postId }
+        if (postIndex == -1) return false
+
+        val currentPost = posts[postIndex]
+        val updateAttachments = currentPost.attachments + attachment
+        posts[postIndex] = currentPost.copy(attachments = updateAttachments)
+        return true
     }
 
     fun clear() {
@@ -91,10 +96,17 @@ fun main() {
     val result = WallService.update(updatePost1)
     println("Обновление прошло успешно - $result, новый текст поста ${addPost1.id}: ${updatePost1.string} и количеством лайков ${updatePost1.likes.count}")
 
-    println(PhotoAttachment(Photo(1, 1, "https1_1", "https1_2")))
-    println(AudioAttachment(Audio(2, 2, "Nirvana", "Rape me")))
-    println(VideoAttachment(Video(3, 3, "movie", 30)))
-    println(DocAttachment(Doc(4, 4, "Document")))
-    println(StickerAttachment(Sticker(5, 5, "URL")))
+    val photo1 = Attachment.Photo(1, 1, "https1", "https2")
+    val photo2 = Attachment.Photo(2, 2, "https3", "https4")
+    val video1 = Attachment.Video(1, 1, "movie", 30)
 
+    val add1 = WallService.addAttachment(1, photo1)
+    println("Фото добавлено к посту ${addPost1.id}: $add1")
+
+    val add2 = WallService.addAttachment(1, video1)
+    println("Видео добавлено к посту ${addPost1.id}: $add2")
+
+    val add3 = WallService.addAttachment(2, photo2)
+    println("Фото добавлено к посту ${addPost2.id}: $add3")
 }
+

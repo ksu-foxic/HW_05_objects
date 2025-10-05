@@ -37,4 +37,22 @@ class WallServiceTest {
         val updatedPost = WallService.update(update)
         assertFalse(updatedPost)
     }
+
+    @Test
+    fun addPostTrue() {
+        val service = WallService
+        service.add(Post(id = 0, string = "Hello1", likes = Likes(count = 10)))
+        val photo1 = Attachment.Photo(1, 1, "https1", "https2")
+        val addPhoto = service.addAttachment(1,photo1)
+        assertTrue(addPhoto)
+    }
+
+    @Test
+    fun addPostFalse() {
+        val service = WallService
+        service.add(Post(id = 0, string = "Hello1", likes = Likes(count = 10)))
+        val photo1 = Attachment.Photo(1, 1, "https1", "https2")
+        val addPhoto = service.addAttachment(2,photo1)
+        assertFalse(addPhoto)
+    }
 }
